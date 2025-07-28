@@ -12,6 +12,23 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
+// Debug: Log config in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('Firebase Config:', {
+    apiKey: firebaseConfig.apiKey ? 'Set' : 'Missing',
+    authDomain: firebaseConfig.authDomain ? 'Set' : 'Missing',
+    projectId: firebaseConfig.projectId ? 'Set' : 'Missing',
+    storageBucket: firebaseConfig.storageBucket ? 'Set' : 'Missing',
+    messagingSenderId: firebaseConfig.messagingSenderId ? 'Set' : 'Missing',
+    appId: firebaseConfig.appId ? 'Set' : 'Missing'
+  });
+}
+
+// Validate required config
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error('Firebase configuration is missing required fields. Check your environment variables.');
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
