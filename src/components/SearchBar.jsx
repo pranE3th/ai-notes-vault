@@ -17,7 +17,7 @@ export default function SearchBar({ notes, onResults, onClear }) {
     }, 300); // Debounce search
 
     return () => clearTimeout(timeoutId);
-  }, [query, notes]);
+  }, [query, notes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = async () => {
     if (!query.trim()) {

@@ -17,6 +17,15 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
   const [aiProcessing, setAiProcessing] = useState(false);
   const [embedding, setEmbedding] = useState(existingNote?.embedding || null);
 
+  // Helper function to check if content has meaningful text
+  const hasMeaningfulContent = (htmlContent) => {
+    if (!htmlContent) return false;
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    return textContent.trim().length > 0;
+  };
+
   // Auto-save draft to localStorage
   useEffect(() => {
     const draftKey = existingNote?.id || 'new-note-draft';
@@ -51,7 +60,7 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
     }, 1500); // Process with AI after 1.5 seconds of inactivity
 
     return () => clearTimeout(timeout);
-  }, [content]);
+  }, [content]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounced auto-save (wait for AI processing to complete)
   useEffect(() => {
@@ -63,7 +72,7 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
     }, 3000); // Auto-save after 3 seconds of inactivity (increased to allow AI processing)
 
     return () => clearTimeout(timeout);
-  }, [title, content, tags, aiProcessing]);
+  }, [title, content, tags, aiProcessing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const processWithAI = useCallback(async () => {
     if (!content || content.length < 50) return;
@@ -133,7 +142,7 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
     } finally {
       setSaving(false);
     }
-  }, [title, content, tags, summary, existingNote]);
+  }, [title, content, tags, summary, existingNote, embedding, user?.uid]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -175,20 +184,7 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
     }
   };
 
-  const handleRegenerateSummary = async () => {
-    if (!content) return;
 
-    setAiProcessing(true);
-
-    try {
-      const newSummary = await getSummary(content);
-      setSummary(newSummary);
-    } catch (error) {
-      console.error('Failed to regenerate summary:', error);
-    } finally {
-      setAiProcessing(false);
-    }
-  };
 
   const handleRemoveTag = (tagToRemove) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
@@ -296,19 +292,12 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
       </div>
 
       {/* Summary section - always show if there's content */}
-      {(summary || content) && (
+      {(summary || hasMeaningfulContent(content)) && (
         <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               AI Summary
             </h3>
-            <button
-              onClick={handleRegenerateSummary}
-              disabled={aiProcessing || !content}
-              className="px-3 py-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50 border border-blue-300 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
-            >
-              {aiProcessing ? 'Regenerating...' : 'Regenerate'}
-            </button>
           </div>
           {summary ? (
             <p className="text-sm text-gray-600 dark:text-gray-400">{summary}</p>

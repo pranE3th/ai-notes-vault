@@ -28,9 +28,9 @@ export default function NoteCard({ note, onEdit, onDelete, onView }) {
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200 dark:border-gray-700">
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
-        <h3 
+        <h3
           className="text-lg font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 line-clamp-2"
-          onClick={() => onView?.(note)}
+          onClick={() => onEdit?.(note)}
         >
           {note.title || 'Untitled'}
         </h3>

@@ -24,14 +24,17 @@ export default function Dashboard() {
       const demoLoaded = loadDemoData();
       if (demoLoaded) {
         const demoNotes = JSON.parse(localStorage.getItem('notes') || '[]');
-        setNotes(demoNotes);
-        setFilteredNotes(demoNotes);
+        const sortedDemoNotes = demoNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setNotes(sortedDemoNotes);
+        setFilteredNotes(sortedDemoNotes);
         return;
       }
     }
 
-    setNotes(savedNotes);
-    setFilteredNotes(savedNotes);
+    // Sort notes by creation date (newest first)
+    const sortedNotes = savedNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    setNotes(sortedNotes);
+    setFilteredNotes(sortedNotes);
   }, []);
 
   const handleLogout = async () => {
@@ -62,9 +65,12 @@ export default function Dashboard() {
       ? notes.map(note => note.id === editingNote.id ? noteData : note)
       : [...notes, noteData];
 
-    setNotes(updatedNotes);
-    setFilteredNotes(updatedNotes);
-    localStorage.setItem('notes', JSON.stringify(updatedNotes));
+    // Sort notes by creation date (newest first)
+    const sortedNotes = updatedNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    setNotes(sortedNotes);
+    setFilteredNotes(sortedNotes);
+    localStorage.setItem('notes', JSON.stringify(sortedNotes));
     setShowEditor(false);
     setEditingNote(null);
   };

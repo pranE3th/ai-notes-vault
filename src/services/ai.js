@@ -38,36 +38,37 @@ function cleanTextForAI(htmlText) {
 // ⚠️ SECURITY WARNING:
 // Frontend AI integration is NOT SECURE for production!
 // OpenAI API keys should NEVER be exposed in frontend code.
-// This implementation uses mock AI for security.
+// For production, implement a backend API to handle OpenAI calls securely.
+// This is enabled for development/demo purposes only.
 
 const AI_CONFIG = {
-  // For security, we don't use real API keys in frontend
-  OPENAI_API_KEY: null, // Intentionally disabled for security
-  OPENAI_BASE_URL: 'https://api.openai.com/v1',
-
-  // Model configurations (for reference)
-  SUMMARY_MODEL: 'gpt-3.5-turbo',
-  EMBEDDING_MODEL: 'text-embedding-ada-002',
-  TAGGING_MODEL: 'gpt-3.5-turbo',
+  // Hugging Face API configuration
+  HUGGINGFACE_API_KEY: process.env.REACT_APP_HUGGINGFACE_API_KEY,
+  HUGGINGFACE_BASE_URL: 'https://api-inference.huggingface.co/models',
+  HUGGINGFACE_MODEL: 'facebook/bart-large-cnn', // Excellent for summarization
 };
 
-// AI is intentionally disabled in frontend for security
-const isAIEnabled = false;
+// Check if Hugging Face is enabled
+const isAIEnabled = Boolean(AI_CONFIG.HUGGINGFACE_API_KEY);
 
-// Log security notice in development
+// Log AI status in development
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔐 AI Security Notice:');
-  console.log('Real OpenAI integration is disabled for security reasons.');
-  console.log('Frontend apps should not contain API keys.');
-  console.log('Using enhanced mock AI instead.');
-  console.log('For production: implement backend API for secure OpenAI integration.');
+  if (isAIEnabled) {
+    console.log('🤗 Hugging Face AI Integration: ENABLED');
+    console.log('⚠️  WARNING: API key is exposed in frontend (development only)');
+    console.log('🔒 For production: implement backend API for secure integration');
+  } else {
+    console.log('🤗 Hugging Face AI Integration: DISABLED');
+    console.log('💡 To enable: Set REACT_APP_HUGGINGFACE_API_KEY in .env file');
+    console.log('🔗 Get your free token: https://huggingface.co/settings/tokens');
+  }
 }
 
-// Create axios instance for OpenAI API
-const openaiApi = axios.create({
-  baseURL: AI_CONFIG.OPENAI_BASE_URL,
+// Create Hugging Face API instance
+const huggingFaceApi = axios.create({
+  baseURL: AI_CONFIG.HUGGINGFACE_BASE_URL,
   headers: {
-    'Authorization': `Bearer ${AI_CONFIG.OPENAI_API_KEY}`,
+    'Authorization': `Bearer ${AI_CONFIG.HUGGINGFACE_API_KEY}`,
     'Content-Type': 'application/json',
   },
 });
@@ -80,55 +81,78 @@ const openaiApi = axios.create({
  */
 export async function getSummary(text, maxLength = 300) {
   try {
-    console.log('getSummary called with text:', text.substring(0, 100));
+    console.log('🤗 getSummary called using Hugging Face');
 
     // Clean the text first
     const cleanText = cleanTextForAI(text);
-    console.log('Cleaned text:', cleanText.substring(0, 100));
+    console.log('Cleaned text length:', cleanText.length);
 
     // Don't process very short text
-    if (cleanText.length < 50) {
-      console.log('Text too short, returning as-is');
-      return cleanText.length > 0 ? cleanText : 'No content to summarize';
+    if (cleanText.length < 30) {
+      return 'Content too short to summarize';
     }
 
-    // Use mock summary if AI is not enabled
+    // Check if Hugging Face is enabled
     if (!isAIEnabled) {
-      console.log('AI not enabled, using mock summary');
-      const mockSummary = generateMockSummary(cleanText, maxLength);
-      console.log('Mock summary generated:', mockSummary);
-      return mockSummary;
+      console.error('❌ Hugging Face API key not found!');
+      console.error('Please set REACT_APP_HUGGINGFACE_API_KEY in your .env file');
+      console.error('Get your free token: https://huggingface.co/settings/tokens');
+      return 'Hugging Face API key required for summarization. Please check console for setup instructions.';
     }
 
-    const response = await openaiApi.post('/chat/completions', {
-      model: AI_CONFIG.SUMMARY_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content: `You are a helpful assistant that creates concise, professional summaries. Create a summary of the given text in approximately ${maxLength} characters or less. Focus on the main points and key information. Return only the summary without any additional text or formatting.`
-        },
-        {
-          role: 'user',
-          content: `Please summarize this text: ${cleanText}`
-        }
-      ],
-      max_tokens: Math.ceil(maxLength / 3), // Rough estimate for token count
-      temperature: 0.3,
-    });
+    console.log('🚀 Calling Hugging Face API for summarization...');
+    return await getHuggingFaceSummary(cleanText, maxLength);
 
-    const summary = response.data.choices[0].message.content.trim();
-
-    // Ensure the summary is not just repeating the original text
-    if (summary.length > cleanText.length * 0.8) {
-      return generateMockSummary(cleanText, maxLength);
-    }
-
-    return summary;
   } catch (error) {
-    console.error('Summary generation failed:', error);
-    return generateMockSummary(cleanTextForAI(text), maxLength);
+    console.error('❌ Hugging Face Summary generation failed:', error);
+    return 'Failed to generate summary using Hugging Face. Please check console for details.';
   }
 }
+
+// Hugging Face Summary Function (FREE!)
+async function getHuggingFaceSummary(cleanText, maxLength) {
+  try {
+    console.log('🤗 Using Hugging Face for summarization...');
+
+    const response = await huggingFaceApi.post(`/${AI_CONFIG.HUGGINGFACE_MODEL}`, {
+      inputs: cleanText,
+      parameters: {
+        max_length: Math.min(150, Math.floor(maxLength / 2)),
+        min_length: 30,
+        do_sample: false,
+        early_stopping: true
+      }
+    });
+
+    let summary = '';
+    if (Array.isArray(response.data) && response.data[0]?.summary_text) {
+      summary = response.data[0].summary_text.trim();
+    } else if (response.data?.summary_text) {
+      summary = response.data.summary_text.trim();
+    } else {
+      throw new Error('Unexpected response format from Hugging Face');
+    }
+
+    console.log('✅ Hugging Face summary generated:', summary);
+    return summary;
+
+  } catch (error) {
+    console.error('❌ Hugging Face error:', error);
+    if (error.response?.status === 401) {
+      return 'Invalid Hugging Face API key. Please check your configuration.';
+    } else if (error.response?.status === 429) {
+      return 'Hugging Face rate limit exceeded. Please try again later.';
+    } else if (error.response?.data?.error) {
+      console.error('Hugging Face API error:', error.response.data.error);
+      return 'Hugging Face API error. Please try again in a moment.';
+    }
+    throw error;
+  }
+}
+
+
+
+
 
 /**
  * Generate relevant tags for the given text using AI
@@ -151,27 +175,9 @@ export async function getTags(text, maxTags = 5) {
       return generateMockTags(cleanText, maxTags);
     }
 
-    const response = await openaiApi.post('/chat/completions', {
-      model: AI_CONFIG.TAGGING_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content: `You are a helpful assistant that generates relevant tags for content. Generate up to ${maxTags} relevant, concise tags for the given text. Return only the tags as a comma-separated list, no additional text. Tags should be single words or short phrases, relevant to the content.`
-        },
-        {
-          role: 'user',
-          content: `Generate tags for this text: ${cleanText}`
-        }
-      ],
-      max_tokens: 100,
-      temperature: 0.3,
-    });
-
-    const tagsString = response.data.choices[0].message.content.trim();
-    const tags = tagsString.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag.length > 0);
-
-    // Remove duplicates and limit to maxTags
-    return [...new Set(tags)].slice(0, maxTags);
+    // For now, use simple keyword extraction instead of AI for tags
+    // This is more reliable and faster than trying to use Hugging Face for tagging
+    return generateMockTags(cleanText, maxTags);
   } catch (error) {
     console.error('Tag generation failed:', error);
     return generateMockTags(cleanTextForAI(text), maxTags);
@@ -193,12 +199,9 @@ export async function getEmbedding(text) {
       return generateMockEmbedding(cleanText);
     }
 
-    const response = await openaiApi.post('/embeddings', {
-      model: AI_CONFIG.EMBEDDING_MODEL,
-      input: cleanText,
-    });
-
-    return response.data.data[0].embedding;
+    // For now, use mock embedding since Hugging Face embeddings require different setup
+    // This is sufficient for basic similarity search functionality
+    return generateMockEmbedding(cleanText);
   } catch (error) {
     console.error('Embedding generation failed:', error);
     return generateMockEmbedding(cleanTextForAI(text));
@@ -236,106 +239,7 @@ export function cosineSimilarity(a, b) {
   return dotProduct / (normA * normB);
 }
 
-// TRUE AI SIMULATION - Dynamic Content Analysis
-function generateMockSummary(text, maxLength = 300) {
-  if (!text || text.length < 10) {
-    return 'No content to summarize';
-  }
-
-  const cleanText = text.toLowerCase().trim();
-  const words = cleanText.split(/\s+/).filter(word => word.length > 0);
-
-  // Extract meaningful keywords
-  const stopWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'a', 'an', 'very', 'really', 'quite', 'just', 'also', 'too', 'so', 'much', 'many', 'more', 'most', 'some', 'any', 'all', 'each', 'every', 'both', 'either', 'neither', 'not', 'no', 'yes', 'well', 'now', 'then', 'here', 'there', 'where', 'when', 'why', 'how', 'what', 'who', 'which', 'whose', 'whom', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'once'];
-
-  const meaningfulWords = words.filter(word =>
-    word.length > 2 &&
-    !stopWords.includes(word) &&
-    /^[a-zA-Z]+$/.test(word)
-  );
-
-  // Analyze content structure and patterns
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 5);
-  const hasQuestions = text.includes('?');
-  const hasExclamations = text.includes('!');
-  const isFirstPerson = cleanText.includes('i ') || cleanText.includes('my ') || cleanText.includes('me ');
-  const isInstructional = cleanText.includes('how to') || cleanText.includes('step') || cleanText.includes('first') || cleanText.includes('then');
-  const isDescriptive = cleanText.includes('looks like') || cleanText.includes('feels like') || cleanText.includes('tastes') || cleanText.includes('sounds');
-  const hasEmotions = cleanText.includes('happy') || cleanText.includes('sad') || cleanText.includes('angry') || cleanText.includes('excited') || cleanText.includes('frustrated');
-  const hasTimeReferences = cleanText.includes('today') || cleanText.includes('yesterday') || cleanText.includes('tomorrow') || cleanText.includes('when');
-  const isComparative = cleanText.includes('better') || cleanText.includes('worse') || cleanText.includes('than') || cleanText.includes('versus');
-
-  // Get key themes
-  const wordFreq = {};
-  meaningfulWords.forEach((word, index) => {
-    // Weight words by position (earlier words are more important)
-    const positionWeight = Math.max(1, meaningfulWords.length - index * 0.1);
-    wordFreq[word] = (wordFreq[word] || 0) + positionWeight;
-  });
-
-  const topWords = Object.entries(wordFreq)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 4)
-    .map(([word]) => word);
-
-  // Generate dynamic summary based on content analysis
-  if (topWords.length === 0) {
-    return `Brief note with ${words.length} words of content.`;
-  }
-
-  // Create varied summary structures based on content characteristics
-  const summaryVariations = [];
-
-  if (isFirstPerson && hasEmotions) {
-    summaryVariations.push(`Personal emotional reflection on ${topWords[0]}${topWords[1] ? ` and ${topWords[1]}` : ''}, expressing feelings and individual experiences.`);
-  }
-
-  if (isInstructional) {
-    summaryVariations.push(`Step-by-step guidance or instructions related to ${topWords[0]}${topWords[1] ? ` and ${topWords[1]}` : ''}.`);
-  }
-
-  if (isDescriptive && topWords.length >= 2) {
-    summaryVariations.push(`Detailed description of ${topWords[0]}, focusing on ${topWords[1]}${topWords[2] ? ` and ${topWords[2]}` : ''}.`);
-  }
-
-  if (hasQuestions) {
-    summaryVariations.push(`Inquiry and questions about ${topWords[0]}${topWords[1] ? `, exploring ${topWords[1]}` : ''}.`);
-  }
-
-  if (isComparative && topWords.length >= 2) {
-    summaryVariations.push(`Comparison between ${topWords[0]} and ${topWords[1]}${topWords[2] ? `, considering ${topWords[2]}` : ''}.`);
-  }
-
-  if (hasTimeReferences && isFirstPerson) {
-    summaryVariations.push(`Personal account of events involving ${topWords[0]}${topWords[1] ? ` and ${topWords[1]}` : ''}.`);
-  }
-
-  if (sentences.length > 3 && topWords.length >= 3) {
-    summaryVariations.push(`Multi-faceted discussion covering ${topWords[0]}, ${topWords[1]}, and ${topWords[2]}.`);
-  }
-
-  if (isFirstPerson && !hasEmotions) {
-    summaryVariations.push(`Personal notes about ${topWords[0]}${topWords[1] ? ` and ${topWords[1]}` : ''}.`);
-  }
-
-  if (topWords.length >= 2 && !isFirstPerson) {
-    summaryVariations.push(`Information about ${topWords[0]} and ${topWords[1]}${topWords[2] ? `, including details on ${topWords[2]}` : ''}.`);
-  }
-
-  // Fallback variations
-  if (summaryVariations.length === 0) {
-    if (topWords.length >= 3) {
-      summaryVariations.push(`Content covering ${topWords[0]}, ${topWords[1]}, and ${topWords[2]}.`);
-    } else if (topWords.length >= 2) {
-      summaryVariations.push(`Notes on ${topWords[0]} and ${topWords[1]}.`);
-    } else {
-      summaryVariations.push(`Content about ${topWords[0]}.`);
-    }
-  }
-
-  // Select the most appropriate summary (first match wins)
-  return summaryVariations[0];
-}
+// Mock summary system removed - OpenAI only
 
 function generateMockTags(text, maxTags) {
   const commonWords = ['note', 'idea', 'project', 'work', 'personal', 'important', 'draft', 'research'];
