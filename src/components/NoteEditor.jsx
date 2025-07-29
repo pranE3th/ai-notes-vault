@@ -176,17 +176,25 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
   };
 
   const handleRegenerateSummary = async () => {
-    if (!content) return;
+    if (!content) {
+      console.log('No content to regenerate summary for');
+      return;
+    }
 
+    console.log('Starting summary regeneration...');
     setAiProcessing(true);
+
     try {
+      console.log('Calling getSummary with content:', content.substring(0, 100));
       const newSummary = await getSummary(content);
       console.log('Regenerated summary:', newSummary);
       setSummary(newSummary);
+      console.log('Summary updated successfully');
     } catch (error) {
       console.error('Failed to regenerate summary:', error);
     } finally {
       setAiProcessing(false);
+      console.log('AI processing finished');
     }
   };
 
@@ -295,8 +303,8 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
         />
       </div>
 
-      {/* Summary (if available) */}
-      {summary && (
+      {/* Summary section - always show if there's content */}
+      {(summary || content) && (
         <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -304,13 +312,30 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
             </h3>
             <button
               onClick={handleRegenerateSummary}
-              disabled={aiProcessing}
-              className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50"
+              disabled={aiProcessing || !content}
+              className="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed border border-blue-300 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+              title={!content ? 'Add content to regenerate summary' : 'Click to regenerate AI summary'}
             >
-              {aiProcessing ? 'Regenerating...' : 'Regenerate'}
+              {aiProcessing ? (
+                <span className="flex items-center space-x-1">
+                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Regenerating...</span>
+                </span>
+              ) : (
+                'Regenerate'
+              )}
             </button>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{summary}</p>
+          {summary ? (
+            <p className="text-sm text-gray-600 dark:text-gray-400">{summary}</p>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-500 italic">
+              {aiProcessing ? 'Generating summary...' : 'Click "Regenerate" to create an AI summary'}
+            </p>
+          )}
         </div>
       )}
     </div>
