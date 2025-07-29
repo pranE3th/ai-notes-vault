@@ -236,7 +236,7 @@ export function cosineSimilarity(a, b) {
   return dotProduct / (normA * normB);
 }
 
-// Mock functions for demo purposes
+// Mock functions for demo purposes - TRUE AI SIMULATION
 function generateMockSummary(text, maxLength) {
   if (!text || text.length < 10) {
     return 'No content to summarize';
@@ -246,7 +246,7 @@ function generateMockSummary(text, maxLength) {
   const words = cleanText.split(/\s+/).filter(word => word.length > 0);
 
   // Extract meaningful keywords (filter out common words)
-  const stopWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'a', 'an', 'very', 'really', 'quite', 'just', 'also', 'too', 'so', 'much', 'many', 'more', 'most', 'some', 'any', 'all', 'each', 'every', 'both', 'either', 'neither', 'not', 'no', 'yes', 'well', 'now', 'then', 'here', 'there', 'where', 'when', 'why', 'how', 'what', 'who', 'which', 'whose', 'whom'];
+  const stopWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'a', 'an', 'very', 'really', 'quite', 'just', 'also', 'too', 'so', 'much', 'many', 'more', 'most', 'some', 'any', 'all', 'each', 'every', 'both', 'either', 'neither', 'not', 'no', 'yes', 'well', 'now', 'then', 'here', 'there', 'where', 'when', 'why', 'how', 'what', 'who', 'which', 'whose', 'whom', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'once'];
 
   const meaningfulWords = words.filter(word =>
     word.length > 2 &&
@@ -254,66 +254,65 @@ function generateMockSummary(text, maxLength) {
     /^[a-zA-Z]+$/.test(word) // Only letters, no numbers or special chars
   );
 
-  // Determine content type based on keywords
-  const contentCategories = {
-    personal: ['life', 'feel', 'feeling', 'emotion', 'happy', 'sad', 'angry', 'love', 'hate', 'family', 'friend', 'relationship', 'myself', 'thoughts', 'mind'],
-    work: ['job', 'work', 'career', 'interview', 'boss', 'colleague', 'office', 'salary', 'project', 'task', 'meeting', 'deadline', 'business'],
-    education: ['learn', 'study', 'school', 'university', 'course', 'lesson', 'teacher', 'student', 'exam', 'homework', 'research', 'knowledge'],
-    technology: ['code', 'programming', 'software', 'computer', 'app', 'website', 'api', 'database', 'algorithm', 'function', 'variable'],
-    entertainment: ['game', 'movie', 'music', 'book', 'show', 'video', 'play', 'watch', 'listen', 'read', 'fun', 'entertainment'],
-    health: ['health', 'doctor', 'medicine', 'exercise', 'diet', 'fitness', 'hospital', 'sick', 'pain', 'treatment'],
-    travel: ['travel', 'trip', 'vacation', 'flight', 'hotel', 'city', 'country', 'visit', 'explore', 'journey'],
-    food: ['food', 'eat', 'cook', 'recipe', 'restaurant', 'meal', 'dinner', 'lunch', 'breakfast', 'ingredients'],
-    finance: ['money', 'budget', 'expense', 'income', 'investment', 'bank', 'loan', 'savings', 'cost', 'price'],
-    planning: ['plan', 'goal', 'schedule', 'calendar', 'todo', 'task', 'organize', 'prepare', 'future', 'timeline']
-  };
+  // Get the most important words (by frequency and position)
+  const wordFreq = {};
+  meaningfulWords.forEach(word => {
+    wordFreq[word] = (wordFreq[word] || 0) + 1;
+  });
 
-  // Score each category
-  const categoryScores = {};
-  for (const [category, keywords] of Object.entries(contentCategories)) {
-    categoryScores[category] = meaningfulWords.filter(word =>
-      keywords.some(keyword => word.includes(keyword) || keyword.includes(word))
-    ).length;
-  }
+  // Sort by frequency and take top words
+  const sortedWords = Object.entries(wordFreq)
+    .sort((a, b) => b[1] - a[1])
+    .map(([word]) => word);
 
-  // Find the highest scoring category
-  const topCategory = Object.entries(categoryScores).reduce((a, b) =>
-    categoryScores[a[0]] > categoryScores[b[0]] ? a : b
-  )[0];
+  // Take first few sentences if they exist and are meaningful
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
 
-  // Generate summary based on top category and key words
-  const topWords = meaningfulWords.slice(0, 3);
+  if (sentences.length > 0 && sentences[0].trim().length < maxLength) {
+    // Try to create a summary from the first sentence, but make it more concise
+    const firstSentence = sentences[0].trim();
+    const sentenceWords = firstSentence.toLowerCase().split(/\s+/);
+    const importantSentenceWords = sentenceWords.filter(word =>
+      word.length > 3 && !stopWords.includes(word)
+    );
 
-  if (categoryScores[topCategory] > 0) {
-    const categoryDescriptions = {
-      personal: 'Personal thoughts and reflections',
-      work: 'Work-related notes and professional matters',
-      education: 'Educational content and learning materials',
-      technology: 'Technical notes and programming concepts',
-      entertainment: 'Entertainment preferences and media content',
-      health: 'Health and wellness information',
-      travel: 'Travel plans and experiences',
-      food: 'Food-related content and recipes',
-      finance: 'Financial planning and money matters',
-      planning: 'Planning and organizational notes'
-    };
-
-    if (topWords.length > 0) {
-      return `${categoryDescriptions[topCategory]} focusing on ${topWords.join(', ')}.`;
-    } else {
-      return `${categoryDescriptions[topCategory]}.`;
+    if (importantSentenceWords.length >= 2) {
+      // Create a more abstract summary
+      const keyThemes = importantSentenceWords.slice(0, 3);
+      return `Discussion about ${keyThemes.join(', ')} and related topics.`;
     }
   }
 
-  // Fallback: create summary from key words
-  if (topWords.length >= 2) {
-    return `Notes discussing ${topWords.join(', ')} and related topics.`;
-  } else if (topWords.length === 1) {
-    return `Notes about ${topWords[0]} and related thoughts.`;
+  // Create summary based on key words and content structure
+  if (sortedWords.length >= 3) {
+    const topThemes = sortedWords.slice(0, 3);
+
+    // Determine the nature of the content
+    const hasOpinions = cleanText.includes('best') || cleanText.includes('favorite') || cleanText.includes('love') || cleanText.includes('hate') || cleanText.includes('prefer');
+    const hasComparisons = cleanText.includes('better') || cleanText.includes('worse') || cleanText.includes('vs') || cleanText.includes('compared');
+    const hasPersonalExp = cleanText.includes('i ') || cleanText.includes('my ') || cleanText.includes('me ');
+
+    if (hasOpinions && hasComparisons) {
+      return `Comparative analysis and personal opinions about ${topThemes.join(', ')}.`;
+    } else if (hasOpinions) {
+      return `Personal preferences and opinions regarding ${topThemes.join(', ')}.`;
+    } else if (hasPersonalExp) {
+      return `Personal experiences and thoughts about ${topThemes.join(', ')}.`;
+    } else {
+      return `Information and discussion about ${topThemes.join(', ')}.`;
+    }
+  } else if (sortedWords.length >= 1) {
+    return `Notes about ${sortedWords[0]} and related content.`;
   }
 
-  // Final fallback
-  return `Personal notes and observations (${words.length} words).`;
+  // Final fallback - analyze content length and structure
+  if (words.length > 20) {
+    return `Detailed notes and thoughts (${words.length} words).`;
+  } else if (words.length > 10) {
+    return `Brief notes and observations (${words.length} words).`;
+  } else {
+    return `Short note (${words.length} words).`;
+  }
 }
 
 function generateMockTags(text, maxTags) {
