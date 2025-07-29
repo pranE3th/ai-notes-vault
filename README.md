@@ -109,11 +109,17 @@ const firebaseConfig = {
 
 ### AI Features
 
-The app includes mock AI functionality that works without an API key. To enable real AI features:
+**🔐 Security Notice:** This app uses secure mock AI functionality. Real OpenAI API keys should **NEVER** be used in frontend applications as they get exposed in the browser.
 
-1. Add your OpenAI API key to the environment variables
-2. The app will automatically use real AI services when available
-3. Falls back to mock implementations for demo purposes
+**Current Implementation:**
+- ✅ Enhanced mock AI with intelligent summaries and tagging
+- ✅ Secure - no API keys exposed to users
+- ✅ Fully functional for demonstration and development
+
+**For Production AI:**
+- Create a backend API to handle OpenAI calls securely
+- Keep API keys on the server side only
+- Frontend makes requests to your secure backend
 
 ## 📁 Project Structure
 

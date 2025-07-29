@@ -24,29 +24,32 @@ function cleanTextForAI(htmlText) {
   return cleanText;
 }
 
-// Configuration - In a real app, these would be environment variables
+// ⚠️ SECURITY WARNING:
+// Frontend AI integration is NOT SECURE for production!
+// OpenAI API keys should NEVER be exposed in frontend code.
+// This implementation uses mock AI for security.
+
 const AI_CONFIG = {
-  // OpenAI API configuration
-  OPENAI_API_KEY: process.env.REACT_APP_OPENAI_API_KEY || 'your-openai-api-key',
+  // For security, we don't use real API keys in frontend
+  OPENAI_API_KEY: null, // Intentionally disabled for security
   OPENAI_BASE_URL: 'https://api.openai.com/v1',
 
-  // Model configurations
+  // Model configurations (for reference)
   SUMMARY_MODEL: 'gpt-3.5-turbo',
   EMBEDDING_MODEL: 'text-embedding-ada-002',
   TAGGING_MODEL: 'gpt-3.5-turbo',
 };
 
-// Check if AI features are enabled
-const isAIEnabled = AI_CONFIG.OPENAI_API_KEY &&
-  AI_CONFIG.OPENAI_API_KEY !== 'your-openai-api-key' &&
-  AI_CONFIG.OPENAI_API_KEY.startsWith('sk-');
+// AI is intentionally disabled in frontend for security
+const isAIEnabled = false;
 
-// Log AI status in development
+// Log security notice in development
 if (process.env.NODE_ENV === 'development') {
-  console.log('AI Features:', isAIEnabled ? 'Enabled (Real OpenAI)' : 'Disabled (Mock Mode)');
-  if (!isAIEnabled) {
-    console.log('To enable real AI features, add your OpenAI API key to REACT_APP_OPENAI_API_KEY');
-  }
+  console.log('🔐 AI Security Notice:');
+  console.log('Real OpenAI integration is disabled for security reasons.');
+  console.log('Frontend apps should not contain API keys.');
+  console.log('Using enhanced mock AI instead.');
+  console.log('For production: implement backend API for secure OpenAI integration.');
 }
 
 // Create axios instance for OpenAI API

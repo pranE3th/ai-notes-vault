@@ -12,11 +12,10 @@
 - [ ] **Firebase Security Rules configured** (see below)
 - [ ] **Authorized domains updated** (after deployment)
 
-#### 2. OpenAI Setup (Optional - for real AI features)
-- [ ] OpenAI account created
-- [ ] API key generated
-- [ ] API key added to `.env` file
-- [ ] API key added to hosting platform environment variables
+#### 2. OpenAI Setup (⚠️ SECURITY WARNING)
+- [x] **DISABLED for security** - Frontend API keys are not secure
+- [x] Using enhanced mock AI instead
+- [ ] For production: Implement secure backend API for OpenAI integration
 
 #### 3. Environment Variables
 Required variables in `.env` and hosting platform:
@@ -28,7 +27,7 @@ REACT_APP_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
 REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 REACT_APP_FIREBASE_APP_ID=your_app_id
 REACT_APP_FIREBASE_MEASUREMENT_ID=your_measurement_id
-REACT_APP_OPENAI_API_KEY=sk-your_openai_api_key (optional)
+# REACT_APP_OPENAI_API_KEY=disabled_for_security
 ```
 
 ## 🔒 Firebase Security Rules

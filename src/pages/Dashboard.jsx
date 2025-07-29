@@ -114,17 +114,9 @@ export default function Dashboard() {
             <div className="flex items-center space-x-4">
               {/* AI Status Indicator */}
               <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  process.env.REACT_APP_OPENAI_API_KEY &&
-                  process.env.REACT_APP_OPENAI_API_KEY.startsWith('sk-')
-                    ? 'bg-green-500'
-                    : 'bg-yellow-500'
-                }`}></div>
-                <span className="text-xs text-gray-600 dark:text-gray-400">
-                  AI: {process.env.REACT_APP_OPENAI_API_KEY &&
-                       process.env.REACT_APP_OPENAI_API_KEY.startsWith('sk-')
-                    ? 'Active'
-                    : 'Demo'}
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span className="text-xs text-gray-600 dark:text-gray-400" title="Using secure mock AI - no API keys exposed">
+                  AI: Secure
                 </span>
               </div>
 
