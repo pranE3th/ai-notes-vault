@@ -15,11 +15,6 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [aiProcessing, setAiProcessing] = useState(false);
-
-  // Debug aiProcessing state changes
-  useEffect(() => {
-    console.log('🔄 aiProcessing state changed:', aiProcessing);
-  }, [aiProcessing]);
   const [embedding, setEmbedding] = useState(existingNote?.embedding || null);
 
   // Auto-save draft to localStorage
@@ -181,32 +176,17 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
   };
 
   const handleRegenerateSummary = async () => {
-    console.log('🔄 Regenerate button clicked!');
-    console.log('Content exists:', !!content);
-    console.log('Content length:', content?.length || 0);
-    console.log('AI Processing state:', aiProcessing);
+    if (!content) return;
 
-    if (!content) {
-      console.log('❌ No content to regenerate summary for');
-      alert('Please add some content first!');
-      return;
-    }
-
-    console.log('✅ Starting summary regeneration...');
     setAiProcessing(true);
 
     try {
-      console.log('📝 Calling getSummary with content:', content.substring(0, 100));
       const newSummary = await getSummary(content);
-      console.log('🎉 Regenerated summary:', newSummary);
       setSummary(newSummary);
-      console.log('✅ Summary updated successfully');
     } catch (error) {
-      console.error('❌ Failed to regenerate summary:', error);
-      alert('Failed to regenerate summary: ' + error.message);
+      console.error('Failed to regenerate summary:', error);
     } finally {
       setAiProcessing(false);
-      console.log('🏁 AI processing finished');
     }
   };
 
@@ -322,37 +302,12 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               AI Summary
             </h3>
-            {/* Debug test button */}
             <button
-              onClick={() => {
-                console.log('🧪 Test button clicked!');
-                alert('Test button works!');
-              }}
-              className="text-xs bg-red-500 text-white px-2 py-1 rounded mr-2"
-            >
-              Test
-            </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                console.log('🖱️ Button clicked - calling handleRegenerateSummary');
-                handleRegenerateSummary();
-              }}
+              onClick={handleRegenerateSummary}
               disabled={aiProcessing || !content}
-              className="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed border border-blue-300 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-              title={!content ? 'Add content to regenerate summary' : 'Click to regenerate AI summary'}
+              className="px-3 py-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50 border border-blue-300 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
             >
-              {aiProcessing ? (
-                <span className="flex items-center space-x-1">
-                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Regenerating...</span>
-                </span>
-              ) : (
-                'Regenerate'
-              )}
+              {aiProcessing ? 'Regenerating...' : 'Regenerate'}
             </button>
           </div>
           {summary ? (
