@@ -236,7 +236,7 @@ export function cosineSimilarity(a, b) {
   return dotProduct / (normA * normB);
 }
 
-// Mock functions for demo purposes - TRUE AI SIMULATION
+// TRUE AI SIMULATION - Dynamic Content Analysis
 function generateMockSummary(text, maxLength = 300) {
   if (!text || text.length < 10) {
     return 'No content to summarize';
@@ -245,75 +245,96 @@ function generateMockSummary(text, maxLength = 300) {
   const cleanText = text.toLowerCase().trim();
   const words = cleanText.split(/\s+/).filter(word => word.length > 0);
 
-  // Extract meaningful keywords (filter out common words)
+  // Extract meaningful keywords
   const stopWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'a', 'an', 'very', 'really', 'quite', 'just', 'also', 'too', 'so', 'much', 'many', 'more', 'most', 'some', 'any', 'all', 'each', 'every', 'both', 'either', 'neither', 'not', 'no', 'yes', 'well', 'now', 'then', 'here', 'there', 'where', 'when', 'why', 'how', 'what', 'who', 'which', 'whose', 'whom', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'once'];
 
   const meaningfulWords = words.filter(word =>
     word.length > 2 &&
     !stopWords.includes(word) &&
-    /^[a-zA-Z]+$/.test(word) // Only letters, no numbers or special chars
+    /^[a-zA-Z]+$/.test(word)
   );
 
-  // Get the most important words (by frequency and position)
+  // Analyze content structure and patterns
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 5);
+  const hasQuestions = text.includes('?');
+  const hasExclamations = text.includes('!');
+  const isFirstPerson = cleanText.includes('i ') || cleanText.includes('my ') || cleanText.includes('me ');
+  const isInstructional = cleanText.includes('how to') || cleanText.includes('step') || cleanText.includes('first') || cleanText.includes('then');
+  const isDescriptive = cleanText.includes('looks like') || cleanText.includes('feels like') || cleanText.includes('tastes') || cleanText.includes('sounds');
+  const hasEmotions = cleanText.includes('happy') || cleanText.includes('sad') || cleanText.includes('angry') || cleanText.includes('excited') || cleanText.includes('frustrated');
+  const hasTimeReferences = cleanText.includes('today') || cleanText.includes('yesterday') || cleanText.includes('tomorrow') || cleanText.includes('when');
+  const isComparative = cleanText.includes('better') || cleanText.includes('worse') || cleanText.includes('than') || cleanText.includes('versus');
+
+  // Get key themes
   const wordFreq = {};
-  meaningfulWords.forEach(word => {
-    wordFreq[word] = (wordFreq[word] || 0) + 1;
+  meaningfulWords.forEach((word, index) => {
+    // Weight words by position (earlier words are more important)
+    const positionWeight = Math.max(1, meaningfulWords.length - index * 0.1);
+    wordFreq[word] = (wordFreq[word] || 0) + positionWeight;
   });
 
-  // Sort by frequency and take top words
-  const sortedWords = Object.entries(wordFreq)
+  const topWords = Object.entries(wordFreq)
     .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
     .map(([word]) => word);
 
-  // Take first few sentences if they exist and are meaningful
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
-
-  if (sentences.length > 0 && sentences[0].trim().length < maxLength) {
-    // Try to create a summary from the first sentence, but make it more concise
-    const firstSentence = sentences[0].trim();
-    const sentenceWords = firstSentence.toLowerCase().split(/\s+/);
-    const importantSentenceWords = sentenceWords.filter(word =>
-      word.length > 3 && !stopWords.includes(word)
-    );
-
-    if (importantSentenceWords.length >= 2) {
-      // Create a more abstract summary
-      const keyThemes = importantSentenceWords.slice(0, 4);
-      return `Comprehensive discussion and detailed exploration of ${keyThemes.join(', ')} and related topics, providing insights, analysis, and personal perspectives on these interconnected themes.`;
-    }
+  // Generate dynamic summary based on content analysis
+  if (topWords.length === 0) {
+    return `Brief note with ${words.length} words of content.`;
   }
 
-  // Create summary based on key words and content structure
-  if (sortedWords.length >= 3) {
-    const topThemes = sortedWords.slice(0, 3);
+  // Create varied summary structures based on content characteristics
+  const summaryVariations = [];
 
-    // Determine the nature of the content
-    const hasOpinions = cleanText.includes('best') || cleanText.includes('favorite') || cleanText.includes('love') || cleanText.includes('hate') || cleanText.includes('prefer');
-    const hasComparisons = cleanText.includes('better') || cleanText.includes('worse') || cleanText.includes('vs') || cleanText.includes('compared');
-    const hasPersonalExp = cleanText.includes('i ') || cleanText.includes('my ') || cleanText.includes('me ');
+  if (isFirstPerson && hasEmotions) {
+    summaryVariations.push(`Personal emotional reflection on ${topWords[0]}${topWords[1] ? ` and ${topWords[1]}` : ''}, expressing feelings and individual experiences.`);
+  }
 
-    if (hasOpinions && hasComparisons) {
-      return `Detailed comparative analysis exploring personal opinions and preferences about ${topThemes.join(', ')}, including evaluations of different options and subjective assessments of their relative merits.`;
-    } else if (hasOpinions) {
-      return `Personal preferences and subjective opinions regarding ${topThemes.join(', ')}, expressing individual tastes, favorites, and evaluative judgments about the discussed topics.`;
-    } else if (hasPersonalExp) {
-      return `Personal experiences, reflections, and individual thoughts about ${topThemes.join(', ')}, sharing subjective perspectives and personal insights on the matter.`;
+  if (isInstructional) {
+    summaryVariations.push(`Step-by-step guidance or instructions related to ${topWords[0]}${topWords[1] ? ` and ${topWords[1]}` : ''}.`);
+  }
+
+  if (isDescriptive && topWords.length >= 2) {
+    summaryVariations.push(`Detailed description of ${topWords[0]}, focusing on ${topWords[1]}${topWords[2] ? ` and ${topWords[2]}` : ''}.`);
+  }
+
+  if (hasQuestions) {
+    summaryVariations.push(`Inquiry and questions about ${topWords[0]}${topWords[1] ? `, exploring ${topWords[1]}` : ''}.`);
+  }
+
+  if (isComparative && topWords.length >= 2) {
+    summaryVariations.push(`Comparison between ${topWords[0]} and ${topWords[1]}${topWords[2] ? `, considering ${topWords[2]}` : ''}.`);
+  }
+
+  if (hasTimeReferences && isFirstPerson) {
+    summaryVariations.push(`Personal account of events involving ${topWords[0]}${topWords[1] ? ` and ${topWords[1]}` : ''}.`);
+  }
+
+  if (sentences.length > 3 && topWords.length >= 3) {
+    summaryVariations.push(`Multi-faceted discussion covering ${topWords[0]}, ${topWords[1]}, and ${topWords[2]}.`);
+  }
+
+  if (isFirstPerson && !hasEmotions) {
+    summaryVariations.push(`Personal notes about ${topWords[0]}${topWords[1] ? ` and ${topWords[1]}` : ''}.`);
+  }
+
+  if (topWords.length >= 2 && !isFirstPerson) {
+    summaryVariations.push(`Information about ${topWords[0]} and ${topWords[1]}${topWords[2] ? `, including details on ${topWords[2]}` : ''}.`);
+  }
+
+  // Fallback variations
+  if (summaryVariations.length === 0) {
+    if (topWords.length >= 3) {
+      summaryVariations.push(`Content covering ${topWords[0]}, ${topWords[1]}, and ${topWords[2]}.`);
+    } else if (topWords.length >= 2) {
+      summaryVariations.push(`Notes on ${topWords[0]} and ${topWords[1]}.`);
     } else {
-      return `Informational content and detailed discussion about ${topThemes.join(', ')}, covering various aspects and providing insights into the subject matter.`;
+      summaryVariations.push(`Content about ${topWords[0]}.`);
     }
-  } else if (sortedWords.length >= 1) {
-    const mainTopic = sortedWords[0];
-    return `Comprehensive notes and detailed observations about ${mainTopic}, exploring various aspects and providing insights into this topic with personal perspectives and relevant information.`;
   }
 
-  // Final fallback - analyze content length and structure
-  if (words.length > 20) {
-    return `Extensive personal notes containing detailed thoughts, observations, and comprehensive information covering multiple aspects of the discussed topics (${words.length} words of content).`;
-  } else if (words.length > 10) {
-    return `Concise notes and personal observations providing insights and thoughts on the subject matter, with focused content and relevant details (${words.length} words).`;
-  } else {
-    return `Brief personal note containing essential thoughts and key observations on the topic (${words.length} words of content).`;
-  }
+  // Select the most appropriate summary (first match wins)
+  return summaryVariations[0];
 }
 
 function generateMockTags(text, maxTags) {
