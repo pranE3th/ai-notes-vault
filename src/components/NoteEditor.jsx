@@ -15,6 +15,11 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [aiProcessing, setAiProcessing] = useState(false);
+
+  // Debug aiProcessing state changes
+  useEffect(() => {
+    console.log('🔄 aiProcessing state changed:', aiProcessing);
+  }, [aiProcessing]);
   const [embedding, setEmbedding] = useState(existingNote?.embedding || null);
 
   // Auto-save draft to localStorage
@@ -176,25 +181,32 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
   };
 
   const handleRegenerateSummary = async () => {
+    console.log('🔄 Regenerate button clicked!');
+    console.log('Content exists:', !!content);
+    console.log('Content length:', content?.length || 0);
+    console.log('AI Processing state:', aiProcessing);
+
     if (!content) {
-      console.log('No content to regenerate summary for');
+      console.log('❌ No content to regenerate summary for');
+      alert('Please add some content first!');
       return;
     }
 
-    console.log('Starting summary regeneration...');
+    console.log('✅ Starting summary regeneration...');
     setAiProcessing(true);
 
     try {
-      console.log('Calling getSummary with content:', content.substring(0, 100));
+      console.log('📝 Calling getSummary with content:', content.substring(0, 100));
       const newSummary = await getSummary(content);
-      console.log('Regenerated summary:', newSummary);
+      console.log('🎉 Regenerated summary:', newSummary);
       setSummary(newSummary);
-      console.log('Summary updated successfully');
+      console.log('✅ Summary updated successfully');
     } catch (error) {
-      console.error('Failed to regenerate summary:', error);
+      console.error('❌ Failed to regenerate summary:', error);
+      alert('Failed to regenerate summary: ' + error.message);
     } finally {
       setAiProcessing(false);
-      console.log('AI processing finished');
+      console.log('🏁 AI processing finished');
     }
   };
 
@@ -311,7 +323,11 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
               AI Summary
             </h3>
             <button
-              onClick={handleRegenerateSummary}
+              onClick={(e) => {
+                e.preventDefault();
+                console.log('🖱️ Button clicked - calling handleRegenerateSummary');
+                handleRegenerateSummary();
+              }}
               disabled={aiProcessing || !content}
               className="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed border border-blue-300 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
               title={!content ? 'Add content to regenerate summary' : 'Click to regenerate AI summary'}
