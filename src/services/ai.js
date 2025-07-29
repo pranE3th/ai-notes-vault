@@ -1,5 +1,29 @@
 import axios from 'axios';
 
+/**
+ * Clean HTML tags and normalize text for AI processing
+ * @param {string} htmlText - Text that may contain HTML
+ * @returns {string} - Clean plain text
+ */
+function cleanTextForAI(htmlText) {
+  if (!htmlText) return '';
+
+  // Create a temporary div to strip HTML tags
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = htmlText;
+
+  // Get text content and clean it up
+  let cleanText = tempDiv.textContent || tempDiv.innerText || '';
+
+  // Remove extra whitespace and normalize
+  cleanText = cleanText
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .replace(/\n+/g, ' ') // Replace newlines with spaces
+    .trim();
+
+  return cleanText;
+}
+
 // Configuration - In a real app, these would be environment variables
 const AI_CONFIG = {
   // OpenAI API configuration
@@ -42,9 +66,17 @@ const openaiApi = axios.create({
  */
 export async function getSummary(text, maxLength = 150) {
   try {
+    // Clean the text first
+    const cleanText = cleanTextForAI(text);
+
+    // Don't process very short text
+    if (cleanText.length < 50) {
+      return cleanText.length > 0 ? cleanText : 'No content to summarize';
+    }
+
     // Use mock summary if AI is not enabled
     if (!isAIEnabled) {
-      return generateMockSummary(text, maxLength);
+      return generateMockSummary(cleanText, maxLength);
     }
 
     const response = await openaiApi.post('/chat/completions', {
@@ -52,21 +84,28 @@ export async function getSummary(text, maxLength = 150) {
       messages: [
         {
           role: 'system',
-          content: `You are a helpful assistant that creates concise summaries. Create a summary of the given text in approximately ${maxLength} characters or less. Focus on the main points and key information.`
+          content: `You are a helpful assistant that creates concise, professional summaries. Create a summary of the given text in approximately ${maxLength} characters or less. Focus on the main points and key information. Return only the summary without any additional text or formatting.`
         },
         {
           role: 'user',
-          content: `Please summarize this text: ${text}`
+          content: `Please summarize this text: ${cleanText}`
         }
       ],
       max_tokens: Math.ceil(maxLength / 3), // Rough estimate for token count
       temperature: 0.3,
     });
 
-    return response.data.choices[0].message.content.trim();
+    const summary = response.data.choices[0].message.content.trim();
+
+    // Ensure the summary is not just repeating the original text
+    if (summary.length > cleanText.length * 0.8) {
+      return generateMockSummary(cleanText, maxLength);
+    }
+
+    return summary;
   } catch (error) {
     console.error('Summary generation failed:', error);
-    return generateMockSummary(text, maxLength);
+    return generateMockSummary(cleanTextForAI(text), maxLength);
   }
 }
 
@@ -78,9 +117,17 @@ export async function getSummary(text, maxLength = 150) {
  */
 export async function getTags(text, maxTags = 5) {
   try {
+    // Clean the text first
+    const cleanText = cleanTextForAI(text);
+
+    // Don't process very short text
+    if (cleanText.length < 20) {
+      return [];
+    }
+
     // Use mock tags if AI is not enabled
     if (!isAIEnabled) {
-      return generateMockTags(text, maxTags);
+      return generateMockTags(cleanText, maxTags);
     }
 
     const response = await openaiApi.post('/chat/completions', {
@@ -88,11 +135,11 @@ export async function getTags(text, maxTags = 5) {
       messages: [
         {
           role: 'system',
-          content: `You are a helpful assistant that generates relevant tags for content. Generate up to ${maxTags} relevant, concise tags for the given text. Return only the tags as a comma-separated list, no additional text.`
+          content: `You are a helpful assistant that generates relevant tags for content. Generate up to ${maxTags} relevant, concise tags for the given text. Return only the tags as a comma-separated list, no additional text. Tags should be single words or short phrases, relevant to the content.`
         },
         {
           role: 'user',
-          content: `Generate tags for this text: ${text}`
+          content: `Generate tags for this text: ${cleanText}`
         }
       ],
       max_tokens: 100,
@@ -100,10 +147,13 @@ export async function getTags(text, maxTags = 5) {
     });
 
     const tagsString = response.data.choices[0].message.content.trim();
-    return tagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    const tags = tagsString.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag.length > 0);
+
+    // Remove duplicates and limit to maxTags
+    return [...new Set(tags)].slice(0, maxTags);
   } catch (error) {
     console.error('Tag generation failed:', error);
-    return generateMockTags(text, maxTags);
+    return generateMockTags(cleanTextForAI(text), maxTags);
   }
 }
 
@@ -114,20 +164,23 @@ export async function getTags(text, maxTags = 5) {
  */
 export async function getEmbedding(text) {
   try {
-    // Use mock embedding if AI is not enabled
-    if (!isAIEnabled) {
-      return generateMockEmbedding(text);
+    // Clean the text first
+    const cleanText = cleanTextForAI(text);
+
+    // Use mock embedding if AI is not enabled or text is too short
+    if (!isAIEnabled || cleanText.length < 10) {
+      return generateMockEmbedding(cleanText);
     }
 
     const response = await openaiApi.post('/embeddings', {
       model: AI_CONFIG.EMBEDDING_MODEL,
-      input: text,
+      input: cleanText,
     });
 
     return response.data.data[0].embedding;
   } catch (error) {
     console.error('Embedding generation failed:', error);
-    return generateMockEmbedding(text);
+    return generateMockEmbedding(cleanTextForAI(text));
   }
 }
 
@@ -164,10 +217,32 @@ export function cosineSimilarity(a, b) {
 
 // Mock functions for demo purposes
 function generateMockSummary(text, maxLength) {
-  const words = text.split(' ');
-  const summaryLength = Math.min(words.length, Math.floor(maxLength / 6)); // Rough estimate
-  const summary = words.slice(0, summaryLength).join(' ');
-  return summary + (words.length > summaryLength ? '...' : '');
+  if (!text || text.length < 10) {
+    return 'No content to summarize';
+  }
+
+  const words = text.split(' ').filter(word => word.length > 0);
+
+  // If text is already short enough, return as is
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  // Create a more intelligent summary
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+
+  if (sentences.length > 0) {
+    // Take the first sentence if it's not too long
+    const firstSentence = sentences[0].trim();
+    if (firstSentence.length <= maxLength) {
+      return firstSentence + '.';
+    }
+  }
+
+  // Fallback to word truncation
+  const targetWords = Math.floor(maxLength / 6); // Rough estimate
+  const summary = words.slice(0, targetWords).join(' ');
+  return summary + (words.length > targetWords ? '...' : '');
 }
 
 function generateMockTags(text, maxTags) {
