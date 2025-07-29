@@ -26,19 +26,23 @@ In Vercel dashboard, add these environment variables:
 
 #### **Firebase Configuration:**
 ```
-REACT_APP_FIREBASE_API_KEY=AIzaSyA36cu35m_1O1cfLnwOhU9XYiFPys7YjLk
-REACT_APP_FIREBASE_AUTH_DOMAIN=ai-notes-vault.firebaseapp.com
-REACT_APP_FIREBASE_PROJECT_ID=ai-notes-vault
-REACT_APP_FIREBASE_STORAGE_BUCKET=ai-notes-vault.firebasestorage.app
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=801991657684
-REACT_APP_FIREBASE_APP_ID=1:801991657684:web:2c6527c46c6dd985a31341
-REACT_APP_FIREBASE_MEASUREMENT_ID=G-PL8FN5E7V6
+REACT_APP_FIREBASE_API_KEY=your-firebase-api-key-here
+REACT_APP_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your-project-id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+REACT_APP_FIREBASE_APP_ID=your-app-id
+REACT_APP_FIREBASE_MEASUREMENT_ID=your-measurement-id
 ```
 
 #### **Hugging Face AI:**
 ```
 REACT_APP_HUGGINGFACE_API_KEY=hf_your-token-here
 ```
+
+**⚠️ IMPORTANT**: Replace the placeholder values above with your actual keys from:
+- **Firebase**: Get from your Firebase Console → Project Settings → General
+- **Hugging Face**: Get from https://huggingface.co/settings/tokens
 
 ### **Step 4: Deploy**
 1. Click "Deploy"
