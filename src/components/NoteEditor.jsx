@@ -322,6 +322,16 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               AI Summary
             </h3>
+            {/* Debug test button */}
+            <button
+              onClick={() => {
+                console.log('🧪 Test button clicked!');
+                alert('Test button works!');
+              }}
+              className="text-xs bg-red-500 text-white px-2 py-1 rounded mr-2"
+            >
+              Test
+            </button>
             <button
               onClick={(e) => {
                 e.preventDefault();
