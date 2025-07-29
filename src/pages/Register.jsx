@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,9 +11,16 @@ export default function Register() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const { register } = useAuth();
+
+  const { register, user } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -37,10 +44,9 @@ export default function Register() {
       setError('');
       setLoading(true);
       await register(formData.email, formData.password, formData.displayName);
-      navigate('/dashboard');
+      // Don't navigate here - let the useEffect handle it when user state updates
     } catch (error) {
       setError('Failed to create account: ' + error.message);
-    } finally {
       setLoading(false);
     }
   };
