@@ -224,14 +224,44 @@ function generateMockSummary(text, maxLength) {
     return 'No content to summarize';
   }
 
-  const words = text.split(' ').filter(word => word.length > 0);
+  const cleanText = text.toLowerCase().trim();
 
   // If text is already short enough, return as is
   if (text.length <= maxLength) {
     return text;
   }
 
-  // Create a more intelligent summary
+  // Intelligent content analysis for better summaries
+  const words = cleanText.split(/\s+/).filter(word => word.length > 0);
+
+  // Detect content type and create appropriate summary
+  if (cleanText.includes('recipe') || cleanText.includes('ingredients') || cleanText.includes('cook')) {
+    return 'Recipe with cooking instructions and ingredients list.';
+  }
+
+  if (cleanText.includes('meeting') || cleanText.includes('standup') || cleanText.includes('attendees')) {
+    return 'Meeting notes with discussion points and action items.';
+  }
+
+  if (cleanText.includes('project') || cleanText.includes('plan') || cleanText.includes('phase')) {
+    return 'Project planning document with timeline and objectives.';
+  }
+
+  if (cleanText.includes('learn') || cleanText.includes('study') || cleanText.includes('concept')) {
+    return 'Educational notes covering key concepts and learning materials.';
+  }
+
+  // Personal/emotional content
+  if (cleanText.includes('life') || cleanText.includes('feel') || cleanText.includes('hate') || cleanText.includes('job')) {
+    return 'Personal reflection and thoughts about life circumstances.';
+  }
+
+  // Technical content
+  if (cleanText.includes('code') || cleanText.includes('function') || cleanText.includes('api')) {
+    return 'Technical documentation or code-related notes.';
+  }
+
+  // Default intelligent summary
   const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
 
   if (sentences.length > 0) {
@@ -242,8 +272,19 @@ function generateMockSummary(text, maxLength) {
     }
   }
 
-  // Fallback to word truncation
-  const targetWords = Math.floor(maxLength / 6); // Rough estimate
+  // Extract key themes from the text
+  const keyWords = words.filter(word =>
+    word.length > 4 &&
+    !['that', 'this', 'with', 'have', 'will', 'been', 'from', 'they', 'were', 'said', 'each', 'which', 'their', 'time', 'would', 'there', 'could', 'other'].includes(word)
+  );
+
+  if (keyWords.length > 0) {
+    const themes = keyWords.slice(0, 3).join(', ');
+    return `Note covering topics related to ${themes}.`;
+  }
+
+  // Final fallback
+  const targetWords = Math.floor(maxLength / 6);
   const summary = words.slice(0, targetWords).join(' ');
   return summary + (words.length > targetWords ? '...' : '');
 }
