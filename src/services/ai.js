@@ -281,21 +281,20 @@ function generateMockSummary(text, maxLength) {
     return 'Technical documentation or code-related notes.';
   }
 
-  // Default intelligent summary
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-
-  if (sentences.length > 0) {
-    // Take the first sentence if it's not too long
-    const firstSentence = sentences[0].trim();
-    if (firstSentence.length <= maxLength) {
-      return firstSentence + '.';
-    }
+  // Gaming/entertainment content
+  if (cleanText.includes('game') || cleanText.includes('play') || cleanText.includes('video') ||
+      cleanText.includes('marvel') || cleanText.includes('spider') || cleanText.includes('favorite')) {
+    return 'Notes about gaming preferences and entertainment interests.';
   }
+
+  // Default intelligent summary - NEVER return original text
+  // const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  // Removed the problematic code that was returning original sentences
 
   // Extract key themes from the text
   const keyWords = words.filter(word =>
-    word.length > 4 &&
-    !['that', 'this', 'with', 'have', 'will', 'been', 'from', 'they', 'were', 'said', 'each', 'which', 'their', 'time', 'would', 'there', 'could', 'other'].includes(word)
+    word.length > 3 &&
+    !['that', 'this', 'with', 'have', 'will', 'been', 'from', 'they', 'were', 'said', 'each', 'which', 'their', 'time', 'would', 'there', 'could', 'other', 'very', 'much', 'also', 'just', 'like', 'love'].includes(word)
   );
 
   if (keyWords.length > 0) {
@@ -303,10 +302,14 @@ function generateMockSummary(text, maxLength) {
     return `Note covering topics related to ${themes}.`;
   }
 
-  // Final fallback
-  const targetWords = Math.floor(maxLength / 6);
-  const summary = words.slice(0, targetWords).join(' ');
-  return summary + (words.length > targetWords ? '...' : '');
+  // Final fallback - create a generic summary based on content length
+  if (cleanText.length > 100) {
+    return 'Detailed personal notes and thoughts.';
+  } else if (cleanText.length > 50) {
+    return 'Personal notes and observations.';
+  } else {
+    return 'Brief personal note.';
+  }
 }
 
 function generateMockTags(text, maxTags) {
