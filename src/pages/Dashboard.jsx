@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import NoteCard from '../components/NoteCard';
 import NoteEditor from '../components/NoteEditor';
 import SearchBar from '../components/SearchBar';
+import { loadDemoData } from '../utils/demoData';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -17,6 +18,18 @@ export default function Dashboard() {
   // Load notes from localStorage on mount
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem('notes') || '[]');
+
+    // Load demo data if no notes exist
+    if (savedNotes.length === 0) {
+      const demoLoaded = loadDemoData();
+      if (demoLoaded) {
+        const demoNotes = JSON.parse(localStorage.getItem('notes') || '[]');
+        setNotes(demoNotes);
+        setFilteredNotes(demoNotes);
+        return;
+      }
+    }
+
     setNotes(savedNotes);
     setFilteredNotes(savedNotes);
   }, []);
@@ -99,6 +112,22 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* AI Status Indicator */}
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  process.env.REACT_APP_OPENAI_API_KEY &&
+                  process.env.REACT_APP_OPENAI_API_KEY.startsWith('sk-')
+                    ? 'bg-green-500'
+                    : 'bg-yellow-500'
+                }`}></div>
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  AI: {process.env.REACT_APP_OPENAI_API_KEY &&
+                       process.env.REACT_APP_OPENAI_API_KEY.startsWith('sk-')
+                    ? 'Active'
+                    : 'Demo'}
+                </span>
+              </div>
+
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}

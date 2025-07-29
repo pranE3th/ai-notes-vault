@@ -5,12 +5,25 @@ const AI_CONFIG = {
   // OpenAI API configuration
   OPENAI_API_KEY: process.env.REACT_APP_OPENAI_API_KEY || 'your-openai-api-key',
   OPENAI_BASE_URL: 'https://api.openai.com/v1',
-  
+
   // Model configurations
   SUMMARY_MODEL: 'gpt-3.5-turbo',
   EMBEDDING_MODEL: 'text-embedding-ada-002',
   TAGGING_MODEL: 'gpt-3.5-turbo',
 };
+
+// Check if AI features are enabled
+const isAIEnabled = AI_CONFIG.OPENAI_API_KEY &&
+  AI_CONFIG.OPENAI_API_KEY !== 'your-openai-api-key' &&
+  AI_CONFIG.OPENAI_API_KEY.startsWith('sk-');
+
+// Log AI status in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('AI Features:', isAIEnabled ? 'Enabled (Real OpenAI)' : 'Disabled (Mock Mode)');
+  if (!isAIEnabled) {
+    console.log('To enable real AI features, add your OpenAI API key to REACT_APP_OPENAI_API_KEY');
+  }
+}
 
 // Create axios instance for OpenAI API
 const openaiApi = axios.create({
@@ -29,8 +42,8 @@ const openaiApi = axios.create({
  */
 export async function getSummary(text, maxLength = 150) {
   try {
-    // For demo purposes, return a mock summary if no API key
-    if (!AI_CONFIG.OPENAI_API_KEY || AI_CONFIG.OPENAI_API_KEY === 'your-openai-api-key') {
+    // Use mock summary if AI is not enabled
+    if (!isAIEnabled) {
       return generateMockSummary(text, maxLength);
     }
 
@@ -65,8 +78,8 @@ export async function getSummary(text, maxLength = 150) {
  */
 export async function getTags(text, maxTags = 5) {
   try {
-    // For demo purposes, return mock tags if no API key
-    if (!AI_CONFIG.OPENAI_API_KEY || AI_CONFIG.OPENAI_API_KEY === 'your-openai-api-key') {
+    // Use mock tags if AI is not enabled
+    if (!isAIEnabled) {
       return generateMockTags(text, maxTags);
     }
 
@@ -101,8 +114,8 @@ export async function getTags(text, maxTags = 5) {
  */
 export async function getEmbedding(text) {
   try {
-    // For demo purposes, return mock embedding if no API key
-    if (!AI_CONFIG.OPENAI_API_KEY || AI_CONFIG.OPENAI_API_KEY === 'your-openai-api-key') {
+    // Use mock embedding if AI is not enabled
+    if (!isAIEnabled) {
       return generateMockEmbedding(text);
     }
 
