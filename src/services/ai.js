@@ -21,6 +21,17 @@ function cleanTextForAI(htmlText) {
     .replace(/\n+/g, ' ') // Replace newlines with spaces
     .trim();
 
+  // If the text has no spaces and is long, it might be concatenated words
+  // Try to add some basic spacing for common patterns
+  if (cleanText.length > 50 && cleanText.indexOf(' ') === -1) {
+    // Add spaces before common words that might be concatenated
+    cleanText = cleanText
+      .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase to spaces
+      .replace(/(i)([a-z])/g, '$1 $2') // "i" followed by letters
+      .replace(/(my|life|job|work|dont|have|hate|love|feel|think|want|need|always|never)([a-z])/gi, '$1 $2')
+      .replace(/([a-z])(i|my|life|job|work|dont|have|hate|love|feel|think|want|need|always|never)/gi, '$1 $2');
+  }
+
   return cleanText;
 }
 
@@ -233,10 +244,9 @@ function generateMockSummary(text, maxLength) {
 
   const cleanText = text.toLowerCase().trim();
 
-  // If text is already short enough, return as is
-  if (text.length <= maxLength) {
-    return text;
-  }
+  // NEVER return the original text as summary - always generate a proper summary
+  // Remove this condition that was causing the issue:
+  // if (text.length <= maxLength) { return text; }
 
   // Intelligent content analysis for better summaries
   const words = cleanText.split(/\s+/).filter(word => word.length > 0);
@@ -258,8 +268,11 @@ function generateMockSummary(text, maxLength) {
     return 'Educational notes covering key concepts and learning materials.';
   }
 
-  // Personal/emotional content
-  if (cleanText.includes('life') || cleanText.includes('feel') || cleanText.includes('hate') || cleanText.includes('job')) {
+  // Personal/emotional content - be more specific about detection
+  if (cleanText.includes('life') || cleanText.includes('feel') || cleanText.includes('hate') ||
+      cleanText.includes('job') || cleanText.includes('interview') || cleanText.includes('work') ||
+      cleanText.includes('suck') || cleanText.includes('fail') || cleanText.includes('purpose') ||
+      cleanText.includes('worthy') || cleanText.includes('everything')) {
     return 'Personal reflection and thoughts about life circumstances.';
   }
 
