@@ -78,7 +78,7 @@ const openaiApi = axios.create({
  * @param {number} maxLength - Maximum length of summary (default: 150)
  * @returns {Promise<string>} - The generated summary
  */
-export async function getSummary(text, maxLength = 150) {
+export async function getSummary(text, maxLength = 300) {
   try {
     console.log('getSummary called with text:', text.substring(0, 100));
 
@@ -237,7 +237,7 @@ export function cosineSimilarity(a, b) {
 }
 
 // Mock functions for demo purposes - TRUE AI SIMULATION
-function generateMockSummary(text, maxLength) {
+function generateMockSummary(text, maxLength = 300) {
   if (!text || text.length < 10) {
     return 'No content to summarize';
   }
@@ -278,8 +278,8 @@ function generateMockSummary(text, maxLength) {
 
     if (importantSentenceWords.length >= 2) {
       // Create a more abstract summary
-      const keyThemes = importantSentenceWords.slice(0, 3);
-      return `Discussion about ${keyThemes.join(', ')} and related topics.`;
+      const keyThemes = importantSentenceWords.slice(0, 4);
+      return `Comprehensive discussion and detailed exploration of ${keyThemes.join(', ')} and related topics, providing insights, analysis, and personal perspectives on these interconnected themes.`;
     }
   }
 
@@ -293,25 +293,26 @@ function generateMockSummary(text, maxLength) {
     const hasPersonalExp = cleanText.includes('i ') || cleanText.includes('my ') || cleanText.includes('me ');
 
     if (hasOpinions && hasComparisons) {
-      return `Comparative analysis and personal opinions about ${topThemes.join(', ')}.`;
+      return `Detailed comparative analysis exploring personal opinions and preferences about ${topThemes.join(', ')}, including evaluations of different options and subjective assessments of their relative merits.`;
     } else if (hasOpinions) {
-      return `Personal preferences and opinions regarding ${topThemes.join(', ')}.`;
+      return `Personal preferences and subjective opinions regarding ${topThemes.join(', ')}, expressing individual tastes, favorites, and evaluative judgments about the discussed topics.`;
     } else if (hasPersonalExp) {
-      return `Personal experiences and thoughts about ${topThemes.join(', ')}.`;
+      return `Personal experiences, reflections, and individual thoughts about ${topThemes.join(', ')}, sharing subjective perspectives and personal insights on the matter.`;
     } else {
-      return `Information and discussion about ${topThemes.join(', ')}.`;
+      return `Informational content and detailed discussion about ${topThemes.join(', ')}, covering various aspects and providing insights into the subject matter.`;
     }
   } else if (sortedWords.length >= 1) {
-    return `Notes about ${sortedWords[0]} and related content.`;
+    const mainTopic = sortedWords[0];
+    return `Comprehensive notes and detailed observations about ${mainTopic}, exploring various aspects and providing insights into this topic with personal perspectives and relevant information.`;
   }
 
   // Final fallback - analyze content length and structure
   if (words.length > 20) {
-    return `Detailed notes and thoughts (${words.length} words).`;
+    return `Extensive personal notes containing detailed thoughts, observations, and comprehensive information covering multiple aspects of the discussed topics (${words.length} words of content).`;
   } else if (words.length > 10) {
-    return `Brief notes and observations (${words.length} words).`;
+    return `Concise notes and personal observations providing insights and thoughts on the subject matter, with focused content and relevant details (${words.length} words).`;
   } else {
-    return `Short note (${words.length} words).`;
+    return `Brief personal note containing essential thoughts and key observations on the topic (${words.length} words of content).`;
   }
 }
 

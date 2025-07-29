@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import './NoteEditor.css'; // Custom styling for dark/light mode
 import { v4 as uuidv4 } from 'uuid';
 import { getSummary, getTags, getEmbedding } from '../services/ai';
 import { useAuth } from '../context/AuthContext';

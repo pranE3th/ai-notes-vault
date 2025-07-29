@@ -1,0 +1,137 @@
+/* ReactQuill Dark Mode Styling */
+
+/* Light mode - default black text */
+.ql-editor {
+  color: #1f2937 !important; /* gray-800 */
+}
+
+/* Dark mode - white text */
+.dark .ql-editor {
+  color: #f9fafb !important; /* gray-50 */
+  background-color: #374151 !important; /* gray-700 */
+}
+
+/* Dark mode toolbar styling */
+.dark .ql-toolbar {
+  background-color: #4b5563 !important; /* gray-600 */
+  border-color: #6b7280 !important; /* gray-500 */
+}
+
+/* Dark mode toolbar buttons */
+.dark .ql-toolbar .ql-stroke {
+  stroke: #f9fafb !important; /* gray-50 */
+}
+
+.dark .ql-toolbar .ql-fill {
+  fill: #f9fafb !important; /* gray-50 */
+}
+
+.dark .ql-toolbar .ql-picker-label {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+.dark .ql-toolbar button:hover {
+  background-color: #6b7280 !important; /* gray-500 */
+}
+
+.dark .ql-toolbar button.ql-active {
+  background-color: #3b82f6 !important; /* blue-500 */
+}
+
+/* Dark mode container */
+.dark .ql-container {
+  background-color: #374151 !important; /* gray-700 */
+  border-color: #6b7280 !important; /* gray-500 */
+}
+
+/* Light mode container */
+.ql-container {
+  background-color: #ffffff !important; /* white */
+  border-color: #d1d5db !important; /* gray-300 */
+}
+
+/* Placeholder text styling */
+.ql-editor.ql-blank::before {
+  color: #9ca3af !important; /* gray-400 */
+  font-style: italic;
+}
+
+.dark .ql-editor.ql-blank::before {
+  color: #6b7280 !important; /* gray-500 */
+}
+
+/* Selection styling */
+.dark .ql-editor ::selection {
+  background-color: #3b82f6 !important; /* blue-500 */
+  color: #ffffff !important;
+}
+
+.ql-editor ::selection {
+  background-color: #3b82f6 !important; /* blue-500 */
+  color: #ffffff !important;
+}
+
+/* Code block styling */
+.dark .ql-editor .ql-code-block-container {
+  background-color: #1f2937 !important; /* gray-800 */
+  color: #f9fafb !important; /* gray-50 */
+  border: 1px solid #4b5563 !important; /* gray-600 */
+}
+
+.ql-editor .ql-code-block-container {
+  background-color: #f3f4f6 !important; /* gray-100 */
+  color: #1f2937 !important; /* gray-800 */
+  border: 1px solid #d1d5db !important; /* gray-300 */
+}
+
+/* Blockquote styling */
+.dark .ql-editor blockquote {
+  border-left: 4px solid #6b7280 !important; /* gray-500 */
+  color: #d1d5db !important; /* gray-300 */
+  background-color: #374151 !important; /* gray-700 */
+}
+
+.ql-editor blockquote {
+  border-left: 4px solid #d1d5db !important; /* gray-300 */
+  color: #4b5563 !important; /* gray-600 */
+  background-color: #f9fafb !important; /* gray-50 */
+}
+
+/* Link styling */
+.dark .ql-editor a {
+  color: #60a5fa !important; /* blue-400 */
+}
+
+.ql-editor a {
+  color: #3b82f6 !important; /* blue-500 */
+}
+
+/* List styling */
+.dark .ql-editor ol,
+.dark .ql-editor ul {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+.ql-editor ol,
+.ql-editor ul {
+  color: #1f2937 !important; /* gray-800 */
+}
+
+/* Header styling */
+.dark .ql-editor h1,
+.dark .ql-editor h2,
+.dark .ql-editor h3,
+.dark .ql-editor h4,
+.dark .ql-editor h5,
+.dark .ql-editor h6 {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+.ql-editor h1,
+.ql-editor h2,
+.ql-editor h3,
+.ql-editor h4,
+.ql-editor h5,
+.ql-editor h6 {
+  color: #1f2937 !important; /* gray-800 */
+}
