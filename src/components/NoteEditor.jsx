@@ -68,11 +68,17 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
 
     setAiProcessing(true);
     try {
+      console.log('Processing with AI, content length:', content.length);
+      console.log('Content preview:', content.substring(0, 100));
+
       const [aiSummary, aiTags, aiEmbedding] = await Promise.all([
         getSummary(content),
         getTags(content),
         getEmbedding(content)
       ]);
+
+      console.log('AI Summary generated:', aiSummary);
+      console.log('AI Tags generated:', aiTags);
 
       setSummary(aiSummary);
       setEmbedding(aiEmbedding);
@@ -273,7 +279,7 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
       </div>
 
       {/* Summary (if available) */}
-      {summary && (
+      {summary && summary !== content && (
         <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             AI Summary

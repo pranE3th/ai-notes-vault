@@ -69,17 +69,24 @@ const openaiApi = axios.create({
  */
 export async function getSummary(text, maxLength = 150) {
   try {
+    console.log('getSummary called with text:', text.substring(0, 100));
+
     // Clean the text first
     const cleanText = cleanTextForAI(text);
+    console.log('Cleaned text:', cleanText.substring(0, 100));
 
     // Don't process very short text
     if (cleanText.length < 50) {
+      console.log('Text too short, returning as-is');
       return cleanText.length > 0 ? cleanText : 'No content to summarize';
     }
 
     // Use mock summary if AI is not enabled
     if (!isAIEnabled) {
-      return generateMockSummary(cleanText, maxLength);
+      console.log('AI not enabled, using mock summary');
+      const mockSummary = generateMockSummary(cleanText, maxLength);
+      console.log('Mock summary generated:', mockSummary);
+      return mockSummary;
     }
 
     const response = await openaiApi.post('/chat/completions', {
