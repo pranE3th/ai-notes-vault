@@ -52,16 +52,17 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
     return () => clearTimeout(timeout);
   }, [content]);
 
-  // Debounced auto-save
+  // Debounced auto-save (wait for AI processing to complete)
   useEffect(() => {
     if (!title && !content) return;
+    if (aiProcessing) return; // Don't auto-save while AI is processing
 
     const timeout = setTimeout(async () => {
       await handleAutoSave();
-    }, 2000); // Auto-save after 2 seconds of inactivity
+    }, 3000); // Auto-save after 3 seconds of inactivity (increased to allow AI processing)
 
     return () => clearTimeout(timeout);
-  }, [title, content, tags]);
+  }, [title, content, tags, aiProcessing]);
 
   const processWithAI = useCallback(async () => {
     if (!content || content.length < 50) return;
@@ -173,6 +174,21 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
     }
   };
 
+  const handleRegenerateSummary = async () => {
+    if (!content) return;
+
+    setAiProcessing(true);
+    try {
+      const newSummary = await getSummary(content);
+      console.log('Regenerated summary:', newSummary);
+      setSummary(newSummary);
+    } catch (error) {
+      console.error('Failed to regenerate summary:', error);
+    } finally {
+      setAiProcessing(false);
+    }
+  };
+
   const handleRemoveTag = (tagToRemove) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
@@ -279,11 +295,20 @@ export default function NoteEditor({ existingNote, onSave, onCancel }) {
       </div>
 
       {/* Summary (if available) */}
-      {summary && summary !== content && (
+      {summary && (
         <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            AI Summary
-          </h3>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              AI Summary
+            </h3>
+            <button
+              onClick={handleRegenerateSummary}
+              disabled={aiProcessing}
+              className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50"
+            >
+              {aiProcessing ? 'Regenerating...' : 'Regenerate'}
+            </button>
+          </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">{summary}</p>
         </div>
       )}
